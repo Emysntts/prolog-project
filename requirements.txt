@@ -23,10 +23,8 @@ charset-normalizer==3.4.1
 chroma-hnswlib==0.7.6
 chromadb==0.6.3
 click==8.1.8
-cloud-init==24.4.1
 colorama==0.4.6
 coloredlogs==15.0.1
-command-not-found==0.3
 configobj==5.0.8
 constantly==23.10.4
 crewai==0.108.0
