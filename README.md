@@ -56,3 +56,13 @@ Para rodar o projeto, siga os passos abaixo.
 
 
 
+    /backend
+  ├── app.py                # Código principal da API com Flask/FastAPI
+  ├── prolog_rules.pl       # Arquivo com as    regras Prolog
+  ├── cycle_data.py         # Funções para manipulação de dados dos ciclos
+  ├── calculations.py       # Funções para cálculos de datas do ciclo
+  ├── database.py           # Funções para interação com o banco de dados (SQLite, JSON, etc.)
+  └── requirements.txt      # Dependências (Flask, PySWIP, etc.)
+
+
+
