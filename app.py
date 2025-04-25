@@ -2,6 +2,8 @@ import streamlit as st
 from pyswip import Prolog
 import re
 import datetime
+from datetime import timedelta
+
 
 # Inicializa o ambiente Prolog
 prolog = Prolog()
@@ -83,22 +85,82 @@ def alta_chance_gravidez(nome):
         print(f"Erro ao consultar alta_chance_gravidez: {e}")
     return None, None
 
+def fase_menstrual(nome):
+    data_inicio, duracao_ciclo, duracao_menstruacao = ultimo_ciclo(nome)
+    if data_inicio:
+        # Fase menstrual vai do primeiro dia ao último dia da menstruação
+        data_inicio_menstruacao = data_inicio
+        data_fim_menstruacao = data_inicio + timedelta(days=duracao_menstruacao)
+        return data_inicio_menstruacao.strftime("%d/%m/%Y"), data_fim_menstruacao.strftime("%d/%m/%Y")
+    return None, None
+
+def fase_folicular(nome):
+    data_inicio, duracao_ciclo, duracao_menstruacao = ultimo_ciclo(nome)
+    if data_inicio:
+        # Fase folicular começa após a menstruação
+        data_inicio_folicular = data_inicio + timedelta(days=duracao_menstruacao)
+        # Fase folicular termina 14 dias antes da ovulação (aproximadamente)
+        data_fim_folicular = data_inicio_folicular + timedelta(days=14)
+        return data_inicio_folicular.strftime("%d/%m/%Y"), data_fim_folicular.strftime("%d/%m/%Y")
+    return None, None
+
+def ovulacao(nome):
+    data_inicio, duracao_ciclo, duracao_menstruacao = ultimo_ciclo(nome)
+    if data_inicio:
+        # Ovulação ocorre 14 dias antes do final do ciclo
+        data_ovulacao = data_inicio + timedelta(days=duracao_ciclo - 14)
+        return data_ovulacao.strftime("%d/%m/%Y")
+    return None
+
+def fase_lutea(nome):
+    data_inicio, duracao_ciclo, duracao_menstruacao = ultimo_ciclo(nome)
+    if data_inicio:
+        # Fase lútea começa após a ovulação (14 dias antes do final do ciclo)
+        data_inicio_lutea = data_inicio + timedelta(days=duracao_ciclo - 14)
+        # Fase lútea termina 14 dias depois da ovulação
+        data_fim_lutea = data_inicio_lutea + timedelta(days=14)
+        return data_inicio_lutea.strftime("%d/%m/%Y"), data_fim_lutea.strftime("%d/%m/%Y")
+    return None, None
+
+def fases_do_ciclo(nome):
+    data_inicio_menstruacao, data_fim_menstruacao = fase_menstrual(nome)
+    data_inicio_folicular, data_fim_folicular = fase_folicular(nome)
+    data_ovulacao = ovulacao(nome)
+    data_inicio_lutea, data_fim_lutea = fase_lutea(nome)
+    
+    return {
+        "fase_menstrual": (data_inicio_menstruacao, data_fim_menstruacao),
+        "fase_folicular": (data_inicio_folicular, data_fim_folicular),
+        "ovulacao": data_ovulacao,
+        "fase_lutea": (data_inicio_lutea, data_fim_lutea)
+    }
+
+# -------------------------------------------------------------------------------------------------------------------------------- #
 # --- Interface Streamlit ---
 
 st.title("Previsão e Catalogação do Ciclo Menstrual")
 
 nome = st.text_input("Nome", "")
-data_inicio = st.date_input("Data de Início do Ciclo", datetime.date.today())
-data_fim = st.date_input("Data de Fim do Ciclo", datetime.date.today())
+data_inicio = st.date_input("Data de Início da Sua Última Menstruação", datetime.date.today())
 duracao_menstruacao = st.number_input("Duração da Menstruação (dias)", min_value=1, max_value=15, value=5)
+duracao_ciclo = st.number_input("Duração do Ciclo (dias)", min_value=1, max_value=60, value=28)
 
-# Calcula duração do ciclo
-if data_fim >= data_inicio:
-    duracao_ciclo = (data_fim - data_inicio).days
-    st.write(f"Duração do ciclo: {duracao_ciclo} dias")
-else:
-    st.error("A data de fim deve ser posterior à data de início.")
-    duracao_ciclo = None
+opcao_ciclo = st.radio(
+    "Deseja ver as informações do ciclo do mês atual ou do próximo ciclo?",
+    ("Ciclo Atual", "Próximo Ciclo")
+)
+
+# Lógica para calcular as datas conforme a opção escolhida
+if opcao_ciclo == "Ciclo Atual":
+    # Usando a data fornecida para calcular o ciclo atual
+    st.write(f"Você selecionou o **Ciclo Atual**, começando em {data_inicio}.")
+    # A lógica para calcular as datas do ciclo atual pode ser adicionada aqui
+
+elif opcao_ciclo == "Próximo Ciclo":
+    # Calculando a data de início do próximo ciclo
+    data_inicio = data_inicio + datetime.timedelta(days=duracao_ciclo)
+    st.write(f"Você selecionou o **Próximo Ciclo**, que começa em {data_inicio}.")
+    # A lógica para calcular as datas do próximo ciclo pode ser adicionada aqui
 
 # Adicionar ciclo
 if st.button("Adicionar Ciclo"):
@@ -107,8 +169,8 @@ if st.button("Adicionar Ciclo"):
         st.success(f"Ciclo de {nome} adicionado com sucesso!")
     else:
         st.error("A duração do ciclo deve ser de pelo menos 1 dia.")
-
-# --- Calendário visual do ciclo ---
+# ------------------------------------------------------------------------------------------------------------------------------ #
+# --- Mudancas no Calendário para Exibir o Ciclo Menstrual ---
 from streamlit_calendar import calendar
 
 events = []
@@ -116,12 +178,12 @@ events = []
 if nome.strip() and duracao_ciclo is not None and duracao_ciclo > 0:
     # 1 - Período menstruado
     for i in range(duracao_menstruacao):
-        dia = data_inicio + datetime.timedelta(days=i)
+        dia = data_inicio + datetime.timedelta(days=i) 
         events.append({
             "title": "Menstruação",
             "start": dia.strftime("%Y-%m-%d"),
             "end": dia.strftime("%Y-%m-%d"),
-            "color": "red"
+            "color": "#F27794"  
         })
 
     # 2 - Dia de início e fim do ciclo
@@ -129,14 +191,14 @@ if nome.strip() and duracao_ciclo is not None and duracao_ciclo > 0:
         "title": "Início do Ciclo",
         "start": data_inicio.strftime("%Y-%m-%d"),
         "end": data_inicio.strftime("%Y-%m-%d"),
-        "color": "blue"
+        "color": "#FDDCC9"  
     })
     fim_ciclo = data_inicio + datetime.timedelta(days=duracao_ciclo)
     events.append({
         "title": "Fim do Ciclo",
         "start": fim_ciclo.strftime("%Y-%m-%d"),
         "end": fim_ciclo.strftime("%Y-%m-%d"),
-        "color": "blue"
+        "color": "#D1A6AF"  
     })
 
     # 3 - Dias do período fértil
@@ -152,11 +214,45 @@ if nome.strip() and duracao_ciclo is not None and duracao_ciclo > 0:
                     "title": "Período Fértil",
                     "start": dia.strftime("%Y-%m-%d"),
                     "end": dia.strftime("%Y-%m-%d"),
-                    "color": "orange"
+                    "color": "#B77E49"  
                 })
         except Exception as e:
             print(f"Erro ao processar período fértil: {e}")
 
+    # 4 - Fase Folicular (do início do ciclo até a ovulação)
+    fase_folicular_inicio = data_inicio + datetime.timedelta(days=1)
+    fase_folicular_fim = data_inicio + datetime.timedelta(days=duracao_ciclo // 2)
+    for i in range((fase_folicular_fim - fase_folicular_inicio).days):
+        dia = fase_folicular_inicio + datetime.timedelta(days=i)
+        events.append({
+            "title": "Fase Folicular",
+            "start": dia.strftime("%Y-%m-%d"),
+            "end": dia.strftime("%Y-%m-%d"),
+            "color": "#E2CD8C"  
+        })
+
+    # 5 - Ovulação (por volta do meio do ciclo)
+    ovulacao_dia = data_inicio + datetime.timedelta(days=duracao_ciclo // 2)
+    events.append({
+        "title": "Ovulação",
+        "start": ovulacao_dia.strftime("%Y-%m-%d"),
+        "end": ovulacao_dia.strftime("%Y-%m-%d"),
+        "color": "#F7AC59"  
+    })
+
+    # 6 - Fase Lútea (do fim da ovulação até o fim do ciclo)
+    fase_lutea_inicio = ovulacao_dia + datetime.timedelta(days=1)
+    fase_lutea_fim = fim_ciclo
+    for i in range((fase_lutea_fim - fase_lutea_inicio).days):
+        dia = fase_lutea_inicio + datetime.timedelta(days=i)
+        events.append({
+            "title": "Fase Lútea",
+            "start": dia.strftime("%Y-%m-%d"),
+            "end": dia.strftime("%Y-%m-%d"),
+            "color": "#A3A380"  
+        })
+
+    # Exibindo o calendário com as fases
     calendar_options = {
         "initialView": "dayGridMonth",
         "locale": "pt-br",
@@ -170,3 +266,47 @@ if nome.strip() and duracao_ciclo is not None and duracao_ciclo > 0:
     }
     st.subheader("Calendário do Ciclo Menstrual")
     calendar(events=events, options=calendar_options)
+
+# ----------------------------------------------------------------------------------------------------------------------- #
+# --- Nova Página para Sintomas e Previsão de Fase do Ciclo ---
+
+st.title("Em Qual Fase do Ciclo Você Pode Estar?")
+
+# Lista de sintomas fornecidos pelo usuário
+sintomas = st.multiselect(
+    "Selecione os sintomas que você está sentindo:",
+    ["Inchaço", "Dores de cabeça", "Náusea", "Cansaço", "Alterações de humor", "Tensão nos seios", 
+     "Dor abdominal", "Aumento da libido", "Cólicas", "Dor no baixo ventre", "Mudanças no apetite", 
+     "Mudanças no muco cervical", "Retenção de líquidos", "Sensibilidade nas mamas", "Vontade de comer"]
+)
+
+# Função de previsão com base nos sintomas
+def prever_fase_do_ciclo(sintomas):
+    # Dicionário de fases e seus sintomas
+    fases = {
+        "Menstruação": ["Inchaço", "Dores de cabeça", "Cansaço", "Alterações de humor", 
+                         "Cólicas", "Retenção de líquidos", "Mudanças no apetite"],
+        "Fase folicular": ["Cansaço", "Alterações de humor", "Aumento de energia", 
+                           "Melhora no humor", "Sensibilidade nas mamas"],
+        "Ovulação": ["Dor abdominal", "Tensão nos seios", "Aumento da libido", 
+                     "Mudanças no muco cervical", "Dor no baixo ventre"],
+        "Fase lútea": ["Inchaço", "Dores de cabeça", "Náusea", "Tensão nos seios", 
+                       "Cansaço", "Alterações de humor", "Retenção de líquidos", "Vontade de comer"]
+    }
+    
+    fase_prevista = []
+    
+    # Verificar quais fases têm pelo menos um sintoma correspondente
+    for fase, sintomas_fase in fases.items():
+        if any(sintoma in sintomas for sintoma in sintomas_fase):
+            fase_prevista.append(fase)
+    
+    # Se houver fases previstas, retorna-as. Caso contrário, retorna uma mensagem padrão
+    if fase_prevista:
+        return fase_prevista
+    return ["Fase desconhecida, consulte um especialista."]
+
+# Se sintomas foram selecionados
+if sintomas:
+    fase = prever_fase_do_ciclo(sintomas)
+    st.write(f"Com base nos sintomas selecionados, você pode estar na(s) seguinte(s) fase(s) do ciclo: {', '.join(fase)}")
