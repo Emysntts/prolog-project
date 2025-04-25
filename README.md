@@ -1,58 +1,67 @@
-# Projeto de Prolog
+# Aplicativo de Ciclo Menstrual com Prolog e Streamlit
 
-Este projeto é uma aplicação que usa Prolog para prever e catalogar o ciclo menstrual das usuárias. A aplicação oferece uma interface simples e interativa via **Streamlit**, permitindo que os usuários insiram dados sobre seus ciclos menstruais e obtenham previsões sobre os próximos ciclos.
+Este é um aplicativo para acompanhamento do ciclo menstrual que combina a interface amigável do Streamlit com a poderosa lógica de programação do Prolog.
 
 ## Funcionalidades
 
-- **Cadastro de Ciclos Menstruais**: O usuário pode inserir informações sobre a duração do ciclo e a duração da menstruação.
-- **Previsão de Ciclos Menstruais**: Com base nas informações cadastradas, a aplicação pode prever quando será o próximo ciclo menstrual.
-- **Interface Simples com Streamlit**: Uma interface interativa e fácil de usar foi criada utilizando o Streamlit.
+- **Perfil da Usuária**:
+  - Cadastro de informações pessoais
+  - Registro de dados de saúde
+  - Histórico menstrual
+  - Recomendações personalizadas
 
-## Tecnologias Utilizadas
+- **Acompanhamento do Ciclo**:
+  - Visualização em calendário
+  - Fases do ciclo
+  - Período fértil
+  - Previsão do próximo ciclo
 
-- **Prolog**: Usado para lógica de previsão de ciclos e armazenamento de dados.
-- **Python**: Utilizado para integrar o Prolog com a interface Streamlit.
-- **Streamlit**: Framework para criar interfaces web interativas em Python.
-- **PySwip**: Biblioteca Python para integração com Prolog.
+- **Análise e Histórico**:
+  - Registro de ciclos anteriores
+  - Análise de regularidade
+  - Previsão baseada em sintomas
+  - Estatísticas personalizadas
 
-## Como Rodar o Projeto
+## Tecnologias
 
-Para rodar o projeto, siga os passos abaixo.
+- Python (Streamlit)
+- Prolog (SWI-Prolog)
+- PySwip (integração Python-Prolog)
 
-### Pré-requisitos
+## Instalação
 
-- Python 3.x
-- pip (gerenciador de pacotes do Python)
+1. Clone o repositório
+2. Instale as dependências:
+```bash
+pip install -r requirements.txt
+```
+3. Certifique-se de ter o SWI-Prolog instalado no seu sistema
 
-### Passos para Configuração e Execução
+## Executando o Aplicativo
 
-1. **Clonar o repositório**:
-    ```bash
-    git clone https://github.com/seu-usuario/projeto-ciclo-menstrual.git
-    cd projeto-ciclo-menstrual
-    ```
+```bash
+streamlit run app.py
+```
 
-2. **Criar e ativar um ambiente virtual**:
-    ```bash
-    python3 -m venv venv
-    source venv/bin/activate  # Para Linux/macOS
-    venv\Scripts\activate  # Para Windows
-    ```
+## Estrutura do Projeto
 
-3. **Instalar as dependências**:
-    Com o ambiente virtual ativado, instale as dependências necessárias:
-    ```bash
-    pip install -r requirements.txt
-    ```
+```
+.
+├── app.py              # Aplicativo principal Streamlit
+├── pages/             # Páginas do aplicativo
+│   ├── perfil.py     # Página de perfil
+│   └── historico.py  # Página de histórico
+├── prolog/            # Arquivos Prolog
+│   ├── ciclos.pl     # Lógica do ciclo menstrual
+│   └── perfil.pl     # Gerenciamento de perfil
+└── requirements.txt   # Dependências do projeto
+```
 
-4. **Rodar a aplicação**:
-    Para iniciar a aplicação Streamlit, execute o seguinte comando:
-    ```bash
-    streamlit run app.py
-    ```
+## Contribuindo
 
-5. **Acessar no navegador**:
-    A aplicação será iniciada no navegador padrão. O Streamlit exibirá um link com o endereço local onde a aplicação estará rodando, geralmente `http://localhost:8501`.
+Sinta-se à vontade para contribuir com o projeto! Algumas áreas que podem ser melhoradas:
 
-
-
+- Adicionar mais análises em Prolog
+- Melhorar as previsões baseadas em sintomas
+- Adicionar mais visualizações de dados
+- Expandir a base de conhecimento em Prolog

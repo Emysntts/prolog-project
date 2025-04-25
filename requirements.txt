@@ -33,7 +33,6 @@ dbus-python==1.3.2
 decorator==5.2.1
 Deprecated==1.2.18
 distro==1.9.0
-distro-info==1.7+build1
 docstring_parser==0.16
 durationpy==0.9
 et_xmlfile==2.0.0
@@ -139,8 +138,7 @@ pyproject_hooks==1.2.0
 pyrsistent==0.20.0
 pyserial==3.5
 python-apt==2.7.7+ubuntu4
-python-dateutil==2.9.0.post0
-python-dotenv==1.1.0
+python-dateutil>=2.8.2
 pytz==2024.1
 pyvis==0.3.2
 PyYAML==6.0.1
@@ -158,6 +156,9 @@ six==1.16.0
 sniffio==1.3.1
 stack-data==0.6.3
 starlette==0.46.1
+streamlit>=1.24.0
+streamlit-calendar>=0.3.0
+streamlit==1.31.0
 sympy==1.13.3
 systemd-python==235
 tenacity==9.0.0
@@ -188,3 +189,4 @@ wrapt==1.17.2
 yarl==1.18.3
 zipp==3.21.0
 zope.interface==6.1
+pyswip>=0.2.10
