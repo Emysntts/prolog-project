@@ -1,0 +1,110 @@
+/* Estilo geral */
+.stApp {
+    background-color: #FFF5F5;
+}
+
+/* Estilo da sidebar */
+[data-testid="stSidebar"] {
+    background-color: #FFE4E4;
+    padding-top: 2rem;
+}
+
+[data-testid="stSidebar"] .stRadio {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Estilo dos títulos */
+h1 {
+    color: #FF6B6B;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-weight: 600;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #FFB3B3;
+}
+
+h2 {
+    color: #FF8585;
+    font-family: 'Helvetica Neue', sans-serif;
+    margin-top: 2rem;
+}
+
+/* Estilo dos inputs */
+[data-testid="stTextInput"] input {
+    border-radius: 8px;
+    border: 2px solid #FFB3B3;
+    background-color: white;
+}
+
+[data-testid="stTextInput"] input:focus {
+    border-color: #ff8f8f;
+    box-shadow: 0 0 0 2px rgba(255, 161, 161, 0.2);
+        background-color: white;
+}
+
+/* Estilo dos botões */
+.stButton > button {
+    background-color: #FF6B6B;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 0.5rem 2rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.stButton > button:hover {
+    background-color: #FF8585;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Estilo dos selects */
+.stSelectbox select {
+    border-radius: 8px;
+    border: 2px solid #FFB3B3;
+}
+
+/* Estilo das mensagens de info e success */
+.stAlert {
+    background-color: white;
+    border-radius: 10px;
+    border-left-color: #FF6B6B;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}   
+
+/* Estilo do calendário */
+.fc {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.fc-toolbar-title {
+    color: #FF6B6B !important;
+    font-family: 'Helvetica Neue', sans-serif !important;
+}
+
+/* Estilo dos cards de sintomas */
+[data-testid="stExpander"] {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+}
+
+
+/* Alterar o fundo da toolbar */
+.fc-header-toolbar {
+    background-color: #FFB3B3 !important; /* Cor de fundo da toolbar */
+}
+
+/* Alterar a cor dos botões na toolbar */
+.fc-button {
+    background-color: #FF6666 !important; /* Cor dos botões */
+    color: white !important; /* Cor do texto do botão */
+}
+

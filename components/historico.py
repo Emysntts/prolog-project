@@ -27,7 +27,7 @@ def create_cycle_event(title, start_date, end_date, color, opacity=1.0):
     }
 
 def show_historico_page():
-    st.title("Histórico")
+    st.title("🌸 Histórico")
     
     if 'nome' not in st.session_state:
         st.warning("Por favor, preencha seu perfil primeiro.")
@@ -48,11 +48,11 @@ def show_historico_page():
     
     # Configuração de cores
     cores = {
-        "menstruacao": "#FF9999",
-        "folicular": "#E2CD8C",
-        "ovulacao": "#F7AC59",
-        "lutea": "#A3A380",
-        "previsao": "#FF6666"  # Cor mais escura para previsões
+        "menstruacao": "#FFA4A4",  # Rosa claro
+        "folicular": "#BBE9C0",    # Amarelo claro
+        "ovulacao": "#FAF4B3",     # Laranja claro
+        "lutea": "#C4D9FF",       # Verde claro
+        "previsao": "#FFCCD3"      # Rosa mais escuro para previsões
     }
     
     events = []
@@ -97,9 +97,9 @@ def show_historico_page():
                 dias_ate = (data_prevista - datetime.now().date()).days
                 if dias_ate > 0:
                     if i == 0:
-                        st.info(f" Sua próxima menstruação deve chegar em aproximadamente {dias_ate} dias")
+                        st.warning(f" Sua próxima menstruação deve chegar em aproximadamente {dias_ate} dias")
                     else:
-                        st.info(f" A menstruação seguinte deve chegar em aproximadamente {dias_ate} dias")
+                        st.warning(f" A menstruação seguinte deve chegar em aproximadamente {dias_ate} dias")
                 
                 # Adicionar previsão ao calendário
                 end_date = data_prevista + timedelta(days=duracao_menstruacao-1)
@@ -135,6 +135,14 @@ def show_historico_page():
         }
     }
     
+    # Alerta importante sobre métodos contraceptivos e ciclos irregulares
+    st.markdown("""
+    <div class="alerta-importante">
+        <p>⚠️ As previsões podem ser afetadas por métodos contraceptivos hormonais e ciclos irregulares.</p>
+        <p>🌼Para previsões mais precisas, é recomendado usar o aplicativo durante períodos sem uso de contraceptivos hormonais.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
     # Exibir o calendário
     st.subheader(" Calendário Menstrual")
     calendar(events=events, options=calendar_options)

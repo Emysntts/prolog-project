@@ -14,7 +14,7 @@ def decode_text(text):
     return text
 
 def show_perfil_page():
-    st.title("Perfil")
+    st.title("🌷Perfil")
     
     prolog = init_prolog()
     
@@ -141,11 +141,14 @@ def show_perfil_page():
             
             # Mostrar alertas e recomendações relevantes
             st.subheader("Informações Importantes")
-            
-            # Alerta do método contraceptivo
-            query_metodo = f"alerta_metodo('{metodo}', Alerta)"
-            for resultado in prolog.query(query_metodo):
-                st.info(decode_text(resultado["Alerta"]))
+
+            # Alerta importante sobre métodos contraceptivos e ciclos irregulares
+            st.markdown("""
+            <div class="alerta-importante">
+                <p>⚠️ Métodos contraceptivos hormonais e ciclos irregulares podem afetar a precisão das previsões.</p>
+                <p>Para previsões mais precisas, é recomendado usar o aplicativo durante períodos sem uso de contraceptivos hormonais.</p>
+            </div>
+            """, unsafe_allow_html=True)
             
             # Alerta de condições de saúde
             if problemas != "nenhum":
