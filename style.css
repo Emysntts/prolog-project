@@ -1,9 +1,7 @@
-/* Estilo geral */
 .stApp {
     background-color: #FFF5F5;
 }
 
-/* Estilo da sidebar */
 [data-testid="stSidebar"] {
     background-color: #FFE4E4;
     padding-top: 2rem;
@@ -16,7 +14,6 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* Estilo dos títulos */
 h1 {
     color: #FF6B6B;
     font-family: 'Helvetica Neue', sans-serif;
@@ -31,7 +28,6 @@ h2 {
     margin-top: 2rem;
 }
 
-/* Estilo dos inputs */
 [data-testid="stTextInput"] input {
     border-radius: 8px;
     border: 2px solid #FFB3B3;
@@ -44,7 +40,6 @@ h2 {
         background-color: white;
 }
 
-/* Estilo dos botões */
 .stButton > button {
     background-color: #FF6B6B;
     color: white;
@@ -61,13 +56,13 @@ h2 {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-/* Estilo dos selects */
+
 .stSelectbox select {
     border-radius: 8px;
     border: 2px solid #FFB3B3;
 }
 
-/* Estilo das mensagens de info e success */
+
 .stAlert {
     background-color: white;
     border-radius: 10px;
@@ -75,7 +70,7 @@ h2 {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }   
 
-/* Estilo do calendário */
+
 .fc {
     background-color: white;
     padding: 1rem;
@@ -88,7 +83,7 @@ h2 {
     font-family: 'Helvetica Neue', sans-serif !important;
 }
 
-/* Estilo dos cards de sintomas */
+
 [data-testid="stExpander"] {
     background-color: white;
     border-radius: 10px;

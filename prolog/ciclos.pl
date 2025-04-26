@@ -158,4 +158,4 @@ salvar_dados :-
     told.
 
 carregar_dados :-
-    [ciclos].  % Carrega o arquivo ciclos.pl
+    [ciclos]. 

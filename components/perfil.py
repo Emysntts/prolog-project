@@ -90,7 +90,7 @@ def show_perfil_page():
             nao_sei_duracao = st.checkbox("Não sei a duração do ciclo", 
                                         value=st.session_state.get('nao_sei_duracao', False))
             if nao_sei_duracao:
-                duracao_ciclo = 28  # Duração padrão
+                duracao_ciclo = 28  
         
         with col4:
             duracao_menstruacao = st.number_input("Duração da menstruação (dias)", 
@@ -112,15 +112,15 @@ def show_perfil_page():
         submitted = st.form_submit_button("Salvar")
         
         if submitted and nome:
-            # Salvar perfil
+
             query = f"cadastrar_usuario('{nome.lower()}', {ano_nascimento}, {peso}, {altura}, '{regularidade}', '{metodo}', '{problemas}')"
             list(prolog.query(query))
             
-            # Salvar ciclo inicial
+
             ciclo_query = f"assertz(historico_menstrual('{nome.lower()}', date({data_ultimo_ciclo.year},{data_ultimo_ciclo.month},{data_ultimo_ciclo.day}), {duracao_ciclo}, {duracao_menstruacao}))"
             list(prolog.query(ciclo_query))
             
-            # Armazenar no session state para uso em outras páginas
+
             st.session_state.nome = nome
             st.session_state.ultimo_ciclo = data_ultimo_ciclo
             st.session_state.duracao_ciclo = duracao_ciclo
@@ -129,7 +129,7 @@ def show_perfil_page():
             st.session_state.intensidade_perfil = intensidade
             st.session_state.nao_sei_duracao = nao_sei_duracao  # Armazenar a informação de não saber duração
             
-            # Armazenar dados do formulário
+
             st.session_state.ano_nascimento = ano_nascimento
             st.session_state.peso = peso
             st.session_state.altura = altura
@@ -138,11 +138,11 @@ def show_perfil_page():
             st.session_state.problemas = problemas
             
             st.success("Perfil salvo com sucesso!")
-            
-            # Mostrar alertas e recomendações relevantes
+
+
             st.subheader("Informações Importantes")
 
-            # Alerta importante sobre métodos contraceptivos e ciclos irregulares
+
             st.markdown("""
             <div class="alerta-importante">
                 <p>⚠️ Métodos contraceptivos hormonais e ciclos irregulares podem afetar a precisão das previsões.</p>
@@ -150,13 +150,13 @@ def show_perfil_page():
             </div>
             """, unsafe_allow_html=True)
             
-            # Alerta de condições de saúde
+
             if problemas != "nenhum":
                 query_saude = f"alerta_saude('{problemas}', Alerta)"
                 for resultado in prolog.query(query_saude):
                     st.warning(decode_text(resultado["Alerta"]))
             
-            # Recomendações personalizadas
+
             st.subheader("Recomendações Personalizadas")
             query_rec = f"gerar_recomendacoes('{nome.lower()}', Recomendacoes)"
             for resultado in prolog.query(query_rec):

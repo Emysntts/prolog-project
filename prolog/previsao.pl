@@ -1,6 +1,4 @@
-% Arquivo: previsao.pl
 
-% Regra para prever o próximo ciclo
 previsao_menstruacao(Usuario, ProximoCiclo) :-
     ciclo(Usuario, date(Ano, Mes, Dia), DuracaoCiclo, _),
     ProximoDia is Dia + DuracaoCiclo,
