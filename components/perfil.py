@@ -40,22 +40,40 @@ def show_perfil_page():
         with col2:
             regularidade = st.selectbox(
                 "Seu ciclo é regular?",
-                ["regular", "irregular", "não sei"],
-                index=["regular", "irregular", "não sei"].index(st.session_state.get('regularidade', "regular"))
+                ["regular", "irregular"],
+                index=["regular", "irregular"].index(st.session_state.get('regularidade', "regular"))
             )
+            
+            metodos = {
+                "nenhum": "nenhum",
+                "pilula_adesivo_anel": "pílula, adesivo ou anel",
+                "pilula_progesterona": "pílula só de progesterona",
+                "implante_injecao": "implante ou injeção",
+                "sistema_intrauterino": "sistema intrauterino",
+                "diu_sem_hormonio": "DIU sem hormônio",
+                "preservativo": "preservativo"
+            }
             
             metodo = st.selectbox(
                 "Método Contraceptivo",
-                ["nenhum", "hormonios", "diu_hormonal", "diu_cobre", "outros"],
-                index=["nenhum", "hormonios", "diu_hormonal", "diu_cobre", "outros"].index(st.session_state.get('metodo', "nenhum"))
+                list(metodos.keys()),
+                format_func=lambda x: metodos[x],
+                index=list(metodos.keys()).index(st.session_state.get('metodo', "nenhum"))
             )
             
-            problemas = st.multiselect(
+            problemas_dict = {
+                "sop": "síndrome dos ovários policísticos (SOP)",
+                "endometriose": "endometriose",
+                "miomas": "miomas",
+                "nenhum": "nenhuma/não tenho certeza"
+            }
+            
+            problemas = st.selectbox(
                 "Condições de Saúde",
-                ["nenhum", "sop", "endometriose", "outros"],
-                default=st.session_state.get('problemas', ["nenhum"])
+                list(problemas_dict.keys()),
+                format_func=lambda x: problemas_dict[x],
+                index=list(problemas_dict.keys()).index(st.session_state.get('problemas', "nenhum"))
             )
-            problemas = "_".join(problemas) if problemas else "nenhum"
         
         st.subheader("Informações do Último Ciclo")
         col3, col4 = st.columns(2)
@@ -63,8 +81,6 @@ def show_perfil_page():
         with col3:
             data_ultimo_ciclo = st.date_input("Primeiro dia do último ciclo", 
                                             value=st.session_state.get('ultimo_ciclo', datetime.now().date()))
-            nao_sei_data = st.checkbox("Não sei/Não lembro a data", 
-                                     value=st.session_state.get('nao_sei_data', False))
             
             duracao_ciclo = st.number_input("Duração do ciclo (dias)", 
                                           min_value=21, 
@@ -74,7 +90,7 @@ def show_perfil_page():
             nao_sei_duracao = st.checkbox("Não sei a duração do ciclo", 
                                         value=st.session_state.get('nao_sei_duracao', False))
             if nao_sei_duracao:
-                duracao_ciclo = 28
+                duracao_ciclo = 28  # Duração padrão
         
         with col4:
             duracao_menstruacao = st.number_input("Duração da menstruação (dias)", 
@@ -100,18 +116,18 @@ def show_perfil_page():
             query = f"cadastrar_usuario('{nome.lower()}', {ano_nascimento}, {peso}, {altura}, '{regularidade}', '{metodo}', '{problemas}')"
             list(prolog.query(query))
             
-            # Salvar ciclo inicial se a data for conhecida
-            if not nao_sei_data:
-                ciclo_query = f"assertz(historico_menstrual('{nome.lower()}', date({data_ultimo_ciclo.year},{data_ultimo_ciclo.month},{data_ultimo_ciclo.day}), {duracao_ciclo}, {duracao_menstruacao}))"
-                list(prolog.query(ciclo_query))
+            # Salvar ciclo inicial
+            ciclo_query = f"assertz(historico_menstrual('{nome.lower()}', date({data_ultimo_ciclo.year},{data_ultimo_ciclo.month},{data_ultimo_ciclo.day}), {duracao_ciclo}, {duracao_menstruacao}))"
+            list(prolog.query(ciclo_query))
             
             # Armazenar no session state para uso em outras páginas
             st.session_state.nome = nome
-            st.session_state.ultimo_ciclo = None if nao_sei_data else data_ultimo_ciclo
+            st.session_state.ultimo_ciclo = data_ultimo_ciclo
             st.session_state.duracao_ciclo = duracao_ciclo
             st.session_state.duracao_menstruacao = duracao_menstruacao
             st.session_state.sintomas_perfil = sintomas
             st.session_state.intensidade_perfil = intensidade
+            st.session_state.nao_sei_duracao = nao_sei_duracao  # Armazenar a informação de não saber duração
             
             # Armazenar dados do formulário
             st.session_state.ano_nascimento = ano_nascimento
@@ -119,9 +135,7 @@ def show_perfil_page():
             st.session_state.altura = altura
             st.session_state.regularidade = regularidade
             st.session_state.metodo = metodo
-            st.session_state.problemas = problemas.split('_')
-            st.session_state.nao_sei_data = nao_sei_data
-            st.session_state.nao_sei_duracao = nao_sei_duracao
+            st.session_state.problemas = problemas
             
             st.success("Perfil salvo com sucesso!")
             

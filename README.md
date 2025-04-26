@@ -40,7 +40,7 @@ pip install -r requirements.txt
 ## Executando o Aplicativo
 
 ```bash
-streamlit run app.py
+streamlit run main.py
 ```
 
 ## Estrutura do Projeto
