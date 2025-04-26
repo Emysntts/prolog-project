@@ -1,16 +1,11 @@
 # 🌸 Aplicativo de Ciclo Menstrual com Prolog e Streamlit
+![Screenshot 2025-04-26 104544](https://github.com/user-attachments/assets/97afb45f-b8cf-4463-9faa-71511b7a9178)
+![Screenshot 2025-04-26 104945](https://github.com/user-attachments/assets/1c4879b3-1713-4462-80ac-1d65bde8f16c)
+![Screenshot 2025-04-26 111048](https://github.com/user-attachments/assets/f872891d-6285-4c08-8573-d083cfae30d1)
 
 Este projeto é um aplicativo para o acompanhamento do ciclo menstrual, desenvolvido com uma combinação da lógica de programação em **Prolog** e a interface interativa do **Streamlit**. O objetivo principal é fornecer às usuárias uma ferramenta personalizada para monitorar e prever seus ciclos menstruais, com base em dados de saúde e histórico menstrual.
 
 Além de um sistema de monitoramento, o aplicativo oferece explicações educativas sobre as fases do ciclo menstrual e como fatores como saúde, idade e IMC influenciam esses ciclos.
-
-🌼 Membros da equipe
-Este projeto foi desenvolvido como parte da disciplina Lógica Aplicada à Computação. Os autores do projeto são:
-
-- [Beatriz Pessôa](https://github.com/beapessoas)
-- [Emyle Santos](https://github.com/Emysntts)
-- [Clara Dantas](https://github.com/claratdantass)
-
 
 ## Funcionalidades
 
@@ -114,3 +109,10 @@ streamlit run src/streamlit_app/main.py
 ├── requirements.txt       # Dependências do projeto
 ├── README.md              # Documentação do projeto
 ```
+
+## 🌼 Membros da equipe
+Este projeto foi desenvolvido como parte da disciplina Lógica Aplicada à Computação.
+
+- [Beatriz Pessôa](https://github.com/beapessoas)
+- [Emyle Santos](https://github.com/Emysntts)
+- [Clara Dantas](https://github.com/claratdantass)
