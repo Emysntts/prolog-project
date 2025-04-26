@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 
 def init_prolog():
     prolog = Prolog()
-    prolog.consult("prolog/ciclos.pl")
-    prolog.consult("prolog/perfil.pl")
+    prolog.consult("src/prolog/ciclos.pl")
+    prolog.consult("src/prolog/perfil.pl")
     return prolog
 
 def decode_text(text):

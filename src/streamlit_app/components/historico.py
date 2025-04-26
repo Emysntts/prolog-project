@@ -6,8 +6,8 @@ import json
 
 def init_prolog():
     prolog = Prolog()
-    prolog.consult("prolog/ciclos.pl")
-    prolog.consult("prolog/perfil.pl")
+    prolog.consult("src/prolog/ciclos.pl")
+    prolog.consult("src/prolog/perfil.pl")
     return prolog
 
 def decode_text(text):
@@ -64,7 +64,7 @@ def show_historico_page():
         duracao_menstruacao = st.session_state.duracao_menstruacao
         
 
-        end_date = data_inicio + timedelta(days=duracao_menstruacao-1)  # -1 porque o dia inicial já conta
+        end_date = data_inicio + timedelta(days=duracao_menstruacao-1) 
         events.append(create_cycle_event("Menstruação", data_inicio, end_date, cores["menstruacao"]))
         
 

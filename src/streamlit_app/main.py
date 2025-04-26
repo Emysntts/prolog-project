@@ -2,7 +2,6 @@ import streamlit as st
 from components.perfil import show_perfil_page
 from components.historico import show_historico_page
 
-# Configuração da página
 st.set_page_config(
     page_title="Ciclo Menstrual",
     page_icon="🌸",
@@ -10,11 +9,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Carregar CSS
-with open('style.css') as f:
+
+with open('src/streamlit_app/style.css') as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
-# Esconder elementos da interface
+
 hide_streamlit_style = """
         <style>
         #MainMenu {visibility: hidden;}
@@ -30,10 +29,10 @@ hide_streamlit_style = """
         """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-# Navegação simplificada
+
 page = st.sidebar.radio("Navegação", ['Perfil', 'Histórico'])
 
 if page == 'Perfil':
     show_perfil_page()
-else:  # Histórico
+else:  
     show_historico_page()
