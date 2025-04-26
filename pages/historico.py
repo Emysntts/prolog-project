@@ -1,8 +1,8 @@
 import streamlit as st
-from pyswip import Prolog
 from datetime import datetime, timedelta
-import calendar
 from streamlit_calendar import calendar
+from pyswip import Prolog
+import json
 
 def init_prolog():
     prolog = Prolog()
@@ -10,183 +10,206 @@ def init_prolog():
     prolog.consult("prolog/perfil.pl")
     return prolog
 
-def parse_date(date_term):
-    """Parse a Prolog date term into a datetime object."""
-    if hasattr(date_term, 'args'):
-        return datetime(year=int(date_term.args[0]), month=int(date_term.args[1]), day=int(date_term.args[2]))
-    elif isinstance(date_term, str):
-        import re
-        match = re.match(r"date\((\d+),(\d+),(\d+)\)", date_term)
-        if match:
-            y, m, d = map(int, match.groups())
-            return datetime(year=y, month=m, day=d)
-    return datetime.now()  # fallback
+def decode_text(text):
+    if isinstance(text, bytes):
+        return text.decode('utf-8')
+    return text
 
-def date_to_str(date):
-    """Convert date to string in YYYY-MM-DD format for calendar."""
-    return date.strftime("%Y-%m-%d")
+def parse_date(date_str):
+    if isinstance(date_str, str):
+        return datetime.strptime(date_str, "%d/%m/%Y").date()
+    return date_str
 
-def create_cycle_event(data_inicio, duracao, duracao_m):
-    """Cria eventos para um ciclo específico."""
-    events = []
-    
-    # Período menstrual (vermelho)
-    events.append({
-        'title': 'Menstruação',
-        'start': date_to_str(data_inicio),
-        'end': date_to_str(data_inicio + timedelta(days=duracao_m)),
-        'backgroundColor': '#ff6b6b',
-        'textColor': '#ffffff',
-        'allDay': True
-    })
-    
-    # Fase folicular (rosa claro)
-    events.append({
-        'title': 'Fase Folicular',
-        'start': date_to_str(data_inicio + timedelta(days=duracao_m)),
-        'end': date_to_str(data_inicio + timedelta(days=duracao//2)),
-        'backgroundColor': '#ffd6e0',
-        'textColor': '#000000',
-        'allDay': True
-    })
-    
-    # Período fértil (verde)
-    events.append({
-        'title': 'Período Fértil',
-        'start': date_to_str(data_inicio + timedelta(days=duracao-16)),
-        'end': date_to_str(data_inicio + timedelta(days=duracao-12)),
-        'backgroundColor': '#51cf66',
-        'textColor': '#ffffff',
-        'allDay': True
-    })
-    
-    # Fase lútea (lilás claro)
-    events.append({
-        'title': 'Fase Lútea',
-        'start': date_to_str(data_inicio + timedelta(days=duracao//2)),
-        'end': date_to_str(data_inicio + timedelta(days=duracao)),
-        'backgroundColor': '#e5dbff',
-        'textColor': '#000000',
-        'allDay': True
-    })
-    
-    return events
+def create_cycle_event(title, start_date, end_date, color, opacity=1.0):
+    # Ajuste para incluir o último dia no evento do calendário
+    end_date = end_date + timedelta(days=1)
+    return {
+        "title": title,
+        "start": start_date.strftime("%Y-%m-%d"),
+        "end": end_date.strftime("%Y-%m-%d"),
+        "backgroundColor": f"rgba{tuple(int(color.lstrip('#')[i:i+2], 16) for i in (0, 2, 4)) + (opacity,)}",
+        "borderColor": color
+    }
 
 def show_historico_page():
-    st.title("Histórico e Previsões")
-    prolog = init_prolog()
+    st.title("Histórico")
     
     if 'nome' not in st.session_state:
-        st.warning("Por favor, preencha seu perfil primeiro!")
+        st.warning("Por favor, preencha seu perfil primeiro.")
         return
         
     nome = st.session_state.nome
-    nome_atom = nome.strip().lower()
+    prolog = init_prolog()
     
-    # Inicializa a lista de eventos no state se não existir
-    if 'calendar_events' not in st.session_state:
-        st.session_state.calendar_events = []
+    # Explicações das fases
+    st.sidebar.subheader("Fases do Ciclo")
+    fases = ["menstruacao", "folicular", "ovulacao", "lutea"]
+    for fase in fases:
+        query = f"explicacao_fase({fase}, Explicacao)"
+        for resultado in prolog.query(query):
+            st.sidebar.markdown(f"**{fase.title()}**")
+            st.sidebar.write(decode_text(resultado["Explicacao"]))
+            st.sidebar.markdown("---")
     
-    # Análise de regularidade
-    query_regular = f"ciclo_muito_irregular('{nome_atom}')"
-    irregular = bool(list(prolog.query(query_regular)))
+    # Configuração de cores
+    cores = {
+        "menstruacao": "#FF9999",
+        "folicular": "#E2CD8C",
+        "ovulacao": "#F7AC59",
+        "lutea": "#A3A380",
+        "previsao": "#FF6666",  # Cor mais escura para previsões
+        "historico": "#FFB3B3"  # Cor mais clara para ciclos históricos
+    }
     
-    if irregular:
-        st.warning("""
-        Seu ciclo apresenta variações significativas. 
-        Considere consultar um profissional de saúde para uma avaliação mais detalhada.
-        """)
+    events = []
     
-    # Média de duração do ciclo
-    query_media = f"media_duracao_ciclo('{nome_atom}', Media)"
-    result = list(prolog.query(query_media))
-    if result:
-        media = result[0]["Media"]
-        st.info(f"A duração média do seu ciclo é de {media:.1f} dias.")
+    # Limpar sintomas antigos ao iniciar nova sessão
+    if 'sintomas_limpos' not in st.session_state:
+        query = "retractall(sintoma_registrado(_,_,_,_,_))"
+        list(prolog.query(query))
+        st.session_state.sintomas_limpos = True
+    
+    # Adicionar ciclo atual
+    if st.session_state.ultimo_ciclo and st.session_state.duracao_ciclo:
+        data_inicio = st.session_state.ultimo_ciclo
+        duracao_ciclo = st.session_state.duracao_ciclo
+        duracao_menstruacao = st.session_state.duracao_menstruacao
         
-        if media < 21:
-            st.warning("Seu ciclo está mais curto que o normal (21-35 dias). Consulte um ginecologista.")
-        elif media > 35:
-            st.warning("Seu ciclo está mais longo que o normal (21-35 dias). Consulte um ginecologista.")
-        else:
-            st.success("Seu ciclo está dentro da faixa considerada normal (21-35 dias).")
+        # Fase menstrual (agora com duração correta)
+        end_date = data_inicio + timedelta(days=duracao_menstruacao-1)  # -1 porque o dia inicial já conta
+        events.append(create_cycle_event("Menstruação", data_inicio, end_date, cores["menstruacao"]))
+        
+        # Fase folicular
+        folicular_start = data_inicio + timedelta(days=duracao_menstruacao)
+        folicular_end = data_inicio + timedelta(days=(duracao_ciclo // 2)-1)
+        events.append(create_cycle_event("Fase Folicular", folicular_start, folicular_end, cores["folicular"]))
+        
+        # Ovulação
+        ovulacao_date = data_inicio + timedelta(days=duracao_ciclo // 2)
+        events.append(create_cycle_event("Ovulação", ovulacao_date, ovulacao_date, cores["ovulacao"]))
+        
+        # Fase lútea
+        lutea_start = ovulacao_date + timedelta(days=1)
+        lutea_end = data_inicio + timedelta(days=duracao_ciclo-1)
+        events.append(create_cycle_event("Fase Lútea", lutea_start, lutea_end, cores["lutea"]))
+        
+        # Calcular e mostrar próxima menstruação
+        query = f"calcular_proxima_menstruacao('{nome.lower()}', date({data_inicio.year},{data_inicio.month},{data_inicio.day}), {duracao_ciclo}, DataPrevista)"
+        for resultado in prolog.query(query):
+            data_prevista = resultado["DataPrevista"]
+            ano = data_prevista.args[0] if hasattr(data_prevista, 'args') else int(str(data_prevista).split(',')[0].replace('date(', ''))
+            mes = data_prevista.args[1] if hasattr(data_prevista, 'args') else int(str(data_prevista).split(',')[1])
+            dia = data_prevista.args[2] if hasattr(data_prevista, 'args') else int(str(data_prevista).split(',')[2].replace(')', ''))
+            
+            data_prevista = datetime(ano, mes, dia).date()
+            
+            # Calcular dias até próxima menstruação
+            dias_ate = (data_prevista - datetime.now().date()).days
+            if dias_ate > 0:
+                st.info(f" Sua próxima menstruação deve chegar em aproximadamente {dias_ate} dias")
+            
+            # Adicionar previsão ao calendário
+            end_date = data_prevista + timedelta(days=duracao_menstruacao-1)  # -1 porque o dia inicial já conta
+            events.append(create_cycle_event("Próxima Menstruação (Previsão)", 
+                                          data_prevista, end_date, 
+                                          cores["previsao"], 0.8))
     
-    # Histórico detalhado
-    st.subheader("Registrar Ciclo")
-    with st.form("registro_historico"):
+    # Área para registrar novo ciclo
+    st.subheader(" Registrar Novo Ciclo")
+    with st.form("novo_ciclo"):
         col1, col2 = st.columns(2)
-        
         with col1:
             data_inicio = st.date_input("Data de início")
-            duracao = st.number_input("Duração do ciclo (dias)", min_value=1, max_value=60, value=28)
-            duracao_desconhecida = st.checkbox("Não sei a duração exata", help="Se marcado, usaremos uma duração média de 28 dias")
-            if duracao_desconhecida:
-                duracao = 28
+            data_fim = st.date_input("Data de fim")
         
         with col2:
-            duracao_menstruacao = st.number_input("Duração da menstruação (dias)", min_value=1, max_value=10, value=5)
-            
-            # Sintomas experienciados
             sintomas = st.multiselect(
-                "Sintomas experienciados",
+                "Sintomas",
                 ["Cólicas", "TPM", "Dor nos seios", "Mudanças no muco cervical",
                  "Alterações de humor", "Dor abdominal", "Inchaço"]
             )
-            
-            # Intensidade dos sintomas
-            intensidade = st.slider("Intensidade dos sintomas", 1, 5)
+            intensidade = st.slider("Intensidade dos sintomas", 1, 5, 3)
         
         submitted = st.form_submit_button("Registrar")
         if submitted:
-            # Salvar no Prolog
-            query = f"assertz(historico_menstrual('{nome_atom}', date({data_inicio.year},{data_inicio.month},{data_inicio.day}), {duracao}, {duracao_menstruacao}))"
-            list(prolog.query(query))
+            duracao = (data_fim - data_inicio).days + 1
+            ciclo_query = f"assertz(historico_menstrual('{nome.lower()}', date({data_inicio.year},{data_inicio.month},{data_inicio.day}), {duracao}, {duracao}))"
+            list(prolog.query(ciclo_query))
             
-            # Adiciona os novos eventos ao state
-            novos_eventos = create_cycle_event(data_inicio, duracao, duracao_menstruacao)
-            st.session_state.calendar_events.extend(novos_eventos)
+            # Registrar sintomas
+            for sintoma in sintomas:
+                sintoma_query = f"registrar_sintoma('{nome.lower()}', date({data_inicio.year},{data_inicio.month},{data_inicio.day}), '{sintoma}', {intensidade}, menstruacao)"
+                list(prolog.query(sintoma_query))
+            
+            # Adicionar ciclo histórico ao calendário
+            end_date = data_inicio + timedelta(days=duracao-1)
+            events.append(create_cycle_event(
+                "Menstruação (Histórico)", 
+                data_inicio, 
+                end_date, 
+                cores["historico"],
+                0.7  # Mais transparente para ciclos históricos
+            ))
             
             st.success("Ciclo registrado com sucesso!")
+            st.rerun()
     
-    # Visualização do histórico no calendário
-    st.subheader("Calendário do Ciclo")
+    # Histórico de sintomas
+    st.subheader(" Histórico de Sintomas")
     
-    # Buscar todos os ciclos se ainda não houver eventos no state
-    if not st.session_state.calendar_events:
-        query = f"historico_menstrual('{nome_atom}', Data, Duracao, DuracaoM)"
-        ciclos = list(prolog.query(query))
-        
-        for ciclo in ciclos:
-            data_inicio = parse_date(ciclo['Data'])
-            eventos_ciclo = create_cycle_event(data_inicio, ciclo['Duracao'], ciclo['DuracaoM'])
-            st.session_state.calendar_events.extend(eventos_ciclo)
+    # Obter sintomas do perfil
+    if hasattr(st.session_state, 'sintomas_perfil') and st.session_state.sintomas_perfil:
+        st.write("**Sintomas do Perfil:**")
+        for sintoma in st.session_state.sintomas_perfil:
+            st.write(f" Último ciclo - {sintoma}")
+        st.markdown("---")
     
-    # Adicionar legenda
-    st.markdown("""
-    **Legenda:**
-    - 🔴 Menstruação
-    - 🌸 Fase Folicular
-    - 🌿 Período Fértil
-    - 🌷 Fase Lútea
-    """)
+    # Mostrar todos os sintomas em ordem cronológica
+    query = f"obter_historico_sintomas('{nome.lower()}', Sintomas)"
+    for resultado in prolog.query(query):
+        sintomas = resultado["Sintomas"]
+        if sintomas:
+            # Ordenar sintomas por data
+            sintomas_ordenados = []
+            for sintoma_data in sintomas:
+                data = sintoma_data[0]
+                ano = data.args[0] if hasattr(data, 'args') else int(str(data).split(',')[0].replace('date(', ''))
+                mes = data.args[1] if hasattr(data, 'args') else int(str(data).split(',')[1])
+                dia = data.args[2] if hasattr(data, 'args') else int(str(data).split(',')[2].replace(')', ''))
+                data_obj = datetime(ano, mes, dia).date()
+                
+                sintomas_ordenados.append((
+                    data_obj,
+                    decode_text(sintoma_data[1]),
+                    sintoma_data[2],
+                    decode_text(sintoma_data[3])
+                ))
+            
+            # Ordenar por data
+            sintomas_ordenados.sort(key=lambda x: x[0], reverse=True)
+            
+            # Mostrar sintomas ordenados
+            for data, sintoma, intensidade, fase in sintomas_ordenados:
+                st.write(f" 📅 {data.strftime('%d/%m/%Y')} - {sintoma} (Intensidade: {'⭐' * int(intensidade)})")
+        else:
+            st.info("Nenhum sintoma registrado ainda")
     
-    # Mostrar o calendário
+    # Configuração do calendário
     calendar_options = {
+        "initialView": "dayGridMonth",
+        "locale": "pt-br",
+        "selectable": False,
+        "editable": False,
         "headerToolbar": {
             "left": "prev,next today",
             "center": "title",
             "right": "dayGridMonth,timeGridWeek"
-        },
-        "initialView": "dayGridMonth",
-        "selectable": True,
-        "editable": False,
+        }
     }
     
-    calendar(
-        events=st.session_state.calendar_events,
-        options=calendar_options,
-        key="calendar"
-    )
+    # Exibir o calendário
+    st.subheader(" Calendário Menstrual")
+    calendar(events=events, options=calendar_options)
 
 if __name__ == "__main__":
     show_historico_page()
